@@ -1,6 +1,6 @@
 terraform {
   backend "oss" {
-    bucket = "lz-tfstate-bucket-hk"
+    bucket = "oss-alicloud-sso-demo-tfstate-01"
     prefix = "landing-zone/state"
     key    = "terraform.tfstate"
     region = "cn-hongkong"        # data residency

@@ -11,4 +11,7 @@ variable "project_budgets" {
   }
 }
 
-variable "tags" { type = map(string), default = {} }
+variable "tags" { 
+  type = map(string)
+  default = {} 
+  }
