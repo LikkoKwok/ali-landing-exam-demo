@@ -4,6 +4,11 @@ variable "region" {
   default     = "cn-hongkong"
 }
 
+variable "environment_prefix" {
+  description = "Prefix for naming resources (e.g., 'demo', 'prod')"
+  type        = string
+}
+
 variable "secondary_region" {
   description = "Secondary region for HK<->SG backbone"
   type        = string
@@ -103,13 +108,6 @@ variable "logging_vpc_cidr" {
   description = "CIDR for Logging VPC (central SLS)"
   type        = string
   default     = "10.30.0.0/16"
-}
-
-# Keep but rename the old one for backward compatibility
-variable "vpc_cidr" {
-  description = "DEPRECATED: Use core_insurance_vpc_cidr instead"
-  type        = string
-  default     = "10.1.0.0/16"
 }
 
 # assume 10.0.0.0/8 as the internal network for admin access to CyberArk and bastion host

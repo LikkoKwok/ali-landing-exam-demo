@@ -7,29 +7,21 @@ locals {
 }
 
 module "master_account" {
-  source      = "./modules/master_account"
+  source      = "./modules/01_master_account"
   environment = var.environment
   tags        = local.base_tags
   providers   = { alicloud = alicloud.master }
 }
 
 module "identity_sso" {
-  source                = "./modules/identity_sso"
+  source                = "./modules/02_identity_sso"
   azure_ad_metadata_url = var.azure_ad_metadata_url
   tags                  = local.base_tags
   providers             = { alicloud = alicloud.master }
 }
 
-module "logging_account" {
-  source             = "./modules/logging_account"
-  environment        = var.environment
-  log_retention_days = var.log_retention_days
-  tags               = local.base_tags
-  providers          = { alicloud = alicloud.log }
-}
-
 module "hub_security" {
-  source                  = "./modules/hub_security"
+  source                  = "./modules/03_hub_security"
   environment             = var.environment
   region                  = var.region
   secondary_region        = var.secondary_region
@@ -45,18 +37,22 @@ module "hub_security" {
 }
 
 module "cyberark_bastion" {
-  source        = "./modules/cyberark_bastion"
-  count         = var.enable_cyberark ? 1 : 0
-  vpc_id        = module.hub_security.hub_vpc_id
-  ops_vswitch_id = module.hub_security.ops_vswitch_id
-  tags          = local.base_tags
-  providers     = { alicloud = alicloud.hub }
+  source             = "./modules/04_cyberark_bastion"
+  count              = var.enable_cyberark ? 1 : 0
+  environment        = var.environment
+  admin_source_cidr  = var.admin_source_cidr
+  vpc_id             = module.hub_security.hub_vpc_id
+  ops_vswitch_id     = module.hub_security.ops_vswitch_id
+  tags               = local.base_tags
+  providers          = { alicloud = alicloud.hub }
 }
 
 # Update core_insurance_app module to receive palo_alto_trust_eni_id
 module "core_insurance_app" {
-  source         = "./modules/core_insurance_app"
-  environment_prefix = var.environment
+  source         = "./modules/05_core_insurance_app"
+  environment        = var.environment
+  environment_prefix = var.environment_prefix
+  admin_source_cidr  = var.admin_source_cidr
   core_insurance_vpc_cidr = var.core_insurance_vpc_cidr
   transit_router = module.hub_security.transit_router_id
   cen_id         = module.hub_security.cen_id
@@ -67,10 +63,11 @@ module "core_insurance_app" {
 }
 
 module "pai_platform" {
-  source            = "./modules/pai_platform"
+  source            = "./modules/06_pai_platform"
   count             = var.enable_gpu_cluster ? 1 : 0
   environment       = var.environment
-  ai_lab_vpc_cidr   = var.ai_lab_vpc_cidr 
+  environment_prefix = var.environment_prefix
+  vpc_cidr          = var.ai_lab_vpc_cidr
   gpu_instance_type = var.gpu_instance_type
   kms_key_id        = module.hub_security.kms_key_id
   tags              = local.base_tags
@@ -78,7 +75,7 @@ module "pai_platform" {
 }
 
 module "ai_data_security" {
-  source      = "./modules/ai_data_security"
+  source      = "./modules/07_ai_data_security"
   environment = var.environment
   kms_key_id  = module.hub_security.kms_key_id
   tags        = local.base_tags
@@ -86,29 +83,37 @@ module "ai_data_security" {
 }
 
 module "ai_guardrails" {
-  source      = "./modules/ai_guardrails"
+  source      = "./modules/08_ai_guardrails"
   environment = var.environment
   tags        = local.base_tags
   providers   = { alicloud = alicloud.ai }
 }
 
+module "financial_governance" {
+  source      = "./modules/09_financial_governance"
+  environment = var.environment
+  tags        = local.base_tags
+  providers   = { alicloud = alicloud.master }
+}
+
+module "logging_account" {
+  source             = "./modules/10_logging_account"
+  environment        = var.environment
+  log_retention_days = var.log_retention_days
+  tags               = local.base_tags
+  providers          = { alicloud = alicloud.log }
+}
+
 module "model_governance" {
-  source      = "./modules/model_governance"
+  source      = "./modules/11_model_governance"
   environment = var.environment
   kms_key_id  = module.hub_security.kms_key_id
   tags        = local.base_tags
   providers   = { alicloud = alicloud.ai }
 }
 
-module "financial_governance" {
-  source      = "./modules/financial_governance"
-  environment = var.environment
-  tags        = local.base_tags
-  providers   = { alicloud = alicloud.master }
-}
-
 module "observability" {
-  source        = "./modules/observability"
+  source        = "./modules/12_observability"
   environment   = var.environment
   sls_project   = module.logging_account.sls_project_name
   tags          = local.base_tags

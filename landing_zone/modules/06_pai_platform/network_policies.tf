@@ -1,11 +1,14 @@
 # ============================================
-# KUBERNETES NETWORK POLICIES FOR AI WORKLOADS
-# Requirement: Pod-to-pod communication restricted
-# Training pods can talk to parameter server but not inference pods
+# NETWORK POLICIES - NOT REQUIRED
 # ============================================
+# We use fully managed Alibaba Cloud PAI services (DLC + EAS).
+# PAI provides built-in isolation between workspaces and resource groups.
+# Therefore, manual Kubernetes NetworkPolicy is NOT needed.
+#
+# Reference: https://www.alibabacloud.com/help/en/pai/user-guide/workspace-overview
 
 # Note: These are Kubernetes resources that would be applied to the ACK cluster
-# via kubectl or a Helm chart. Shown as reference for your HLD.
+# via kubectl or a Helm chart. Shown as reference for HLD.
 
 resource "alicloud_cs_kubernetes_addon" "network_policy" {
   cluster_id = alicloud_cs_managed_kubernetes.gpu.id
