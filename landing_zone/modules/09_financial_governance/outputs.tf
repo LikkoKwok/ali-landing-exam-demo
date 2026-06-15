@@ -1,3 +1,7 @@
-output "resource_group_ids" {
-  value = { for k, rg in alicloud_resource_manager_resource_group.lines : k => rg.id }
+output "budget_info" {
+  description = "Budget configuration for AI projects"
+  value = {
+    claims    = { amount = 5000, alert_threshold = 80 }
+    actuarial = { amount = 8000, alert_threshold = 80 }
+  }
 }

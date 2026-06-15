@@ -68,6 +68,7 @@ module "pai_platform" {
   environment       = var.environment
   environment_prefix = var.environment_prefix
   vpc_cidr          = var.ai_lab_vpc_cidr
+  hub_vpc_id        = module.hub_security.hub_vpc_id
   gpu_instance_type = var.gpu_instance_type
   kms_key_id        = module.hub_security.kms_key_id
   tags              = local.base_tags

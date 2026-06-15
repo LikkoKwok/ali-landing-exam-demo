@@ -62,34 +62,35 @@ resource "alicloud_vswitch" "prod_web" {
 # ============================================
 # 4 ENVIRONMENTS - DATABASE SUBNETS
 # Each environment gets its own isolated DB subnet
+# Only DB for Prod is set for Demo and Cost Saving purposes
 # ============================================
 
 # SIT Environment - Database
-resource "alicloud_vswitch" "sit_db" {
-  vpc_id       = alicloud_vpc.core_insurance.id
-  cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 2)   # 10.1.2.0/24
-  zone_id      = data.alicloud_zones.available.zones[0].id
-  vswitch_name = "${var.environment_prefix}-sit-db"
-  tags         = merge(var.tags, { Environment = "SIT", Tier = "database" })
-}
+# resource "alicloud_vswitch" "sit_db" {
+#   vpc_id       = alicloud_vpc.core_insurance.id
+#   cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 2)   # 10.1.2.0/24
+#   zone_id      = data.alicloud_zones.available.zones[0].id
+#   vswitch_name = "${var.environment_prefix}-sit-db"
+#   tags         = merge(var.tags, { Environment = "SIT", Tier = "database" })
+# }
 
 # UAT Environment - Database
-resource "alicloud_vswitch" "uat_db" {
-  vpc_id       = alicloud_vpc.core_insurance.id
-  cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 12)  # 10.1.12.0/24
-  zone_id      = data.alicloud_zones.available.zones[0].id
-  vswitch_name = "${var.environment_prefix}-uat-db"
-  tags         = merge(var.tags, { Environment = "UAT", Tier = "database" })
-}
+# resource "alicloud_vswitch" "uat_db" {
+#   vpc_id       = alicloud_vpc.core_insurance.id
+#   cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 12)  # 10.1.12.0/24
+#   zone_id      = data.alicloud_zones.available.zones[0].id
+#   vswitch_name = "${var.environment_prefix}-uat-db"
+#   tags         = merge(var.tags, { Environment = "UAT", Tier = "database" })
+# }
 
 # Pre-Production Environment - Database
-resource "alicloud_vswitch" "preprod_db" {
-  vpc_id       = alicloud_vpc.core_insurance.id
-  cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 22)  # 10.1.22.0/24
-  zone_id      = data.alicloud_zones.available.zones[0].id
-  vswitch_name = "${var.environment_prefix}-preprod-db"
-  tags         = merge(var.tags, { Environment = "PreProd", Tier = "database" })
-}
+# resource "alicloud_vswitch" "preprod_db" {
+#   vpc_id       = alicloud_vpc.core_insurance.id
+#   cidr_block   = cidrsubnet(var.core_insurance_vpc_cidr, 8, 22)  # 10.1.22.0/24
+#   zone_id      = data.alicloud_zones.available.zones[0].id
+#   vswitch_name = "${var.environment_prefix}-preprod-db"
+#   tags         = merge(var.tags, { Environment = "PreProd", Tier = "database" })
+# }
 
 # Production Environment - Database
 resource "alicloud_vswitch" "prod_db" {
@@ -126,46 +127,47 @@ resource "alicloud_resource_manager_resource_group" "insurance_prod" {
 # ============================================
 # ENCRYPTED RDS FOR EACH ENVIRONMENT
 # Requirement: Each environment has isolated database
+# Only RDS for Prod is created for Demo and Cost Saving purposes
 # ============================================
 
 # SIT Database
-resource "alicloud_db_instance" "core_sit" {
-  engine               = "SQLServer"
-  engine_version       = "2019_ent"
-  instance_type        = var.db_instance_class
-  instance_storage     = var.db_storage_gb
-  vswitch_id           = alicloud_vswitch.sit_db.id
-  instance_name        = "core-insurance-sit-db"
-  encryption_key       = var.kms_key_id
-  resource_group_id    = alicloud_resource_manager_resource_group.insurance_sit.id
-  tags                 = merge(var.tags, { Environment = "SIT" })
-}
+# resource "alicloud_db_instance" "core_sit" {
+#   engine               = "SQLServer"
+#   engine_version       = "2019_ent"
+#   instance_type        = var.db_instance_class
+#   instance_storage     = var.db_storage_gb
+#   vswitch_id           = alicloud_vswitch.sit_db.id
+#   instance_name        = "core-insurance-sit-db"
+#   encryption_key       = var.kms_key_id
+#   resource_group_id    = alicloud_resource_manager_resource_group.insurance_sit.id
+#   tags                 = merge(var.tags, { Environment = "SIT" })
+# }
 
 # UAT Database
-resource "alicloud_db_instance" "core_uat" {
-  engine               = "SQLServer"
-  engine_version       = "2019_ent"
-  instance_type        = var.db_instance_class
-  instance_storage     = var.db_storage_gb
-  vswitch_id           = alicloud_vswitch.uat_db.id
-  instance_name        = "core-insurance-uat-db"
-  encryption_key       = var.kms_key_id
-  resource_group_id    = alicloud_resource_manager_resource_group.insurance_uat.id
-  tags                 = merge(var.tags, { Environment = "UAT" })
-}
+# resource "alicloud_db_instance" "core_uat" {
+#   engine               = "SQLServer"
+#   engine_version       = "2019_ent"
+#   instance_type        = var.db_instance_class
+#   instance_storage     = var.db_storage_gb
+#   vswitch_id           = alicloud_vswitch.uat_db.id
+#   instance_name        = "core-insurance-uat-db"
+#   encryption_key       = var.kms_key_id
+#   resource_group_id    = alicloud_resource_manager_resource_group.insurance_uat.id
+#   tags                 = merge(var.tags, { Environment = "UAT" })
+# }
 
 # Pre-Production Database
-resource "alicloud_db_instance" "core_preprod" {
-  engine               = "SQLServer"
-  engine_version       = "2019_ent"
-  instance_type        = var.db_instance_class
-  instance_storage     = var.db_storage_gb
-  vswitch_id           = alicloud_vswitch.preprod_db.id
-  instance_name        = "core-insurance-preprod-db"
-  encryption_key       = var.kms_key_id
-  resource_group_id    = alicloud_resource_manager_resource_group.insurance_preprod.id
-  tags                 = merge(var.tags, { Environment = "PreProd" })
-}
+# resource "alicloud_db_instance" "core_preprod" {
+#   engine               = "SQLServer"
+#   engine_version       = "2019_ent"
+#   instance_type        = var.db_instance_class
+#   instance_storage     = var.db_storage_gb
+#   vswitch_id           = alicloud_vswitch.preprod_db.id
+#   instance_name        = "core-insurance-preprod-db"
+#   encryption_key       = var.kms_key_id
+#   resource_group_id    = alicloud_resource_manager_resource_group.insurance_preprod.id
+#   tags                 = merge(var.tags, { Environment = "PreProd" })
+# }
 
 # Production Database
 resource "alicloud_db_instance" "core_prod" {

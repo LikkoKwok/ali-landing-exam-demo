@@ -12,5 +12,14 @@ locals {
   }
 }
 
+locals {
+  business_lines = ["claims", "actuarial", "customer-service", "shared"]
+}
+
+resource "alicloud_resource_manager_resource_group" "lines" {
+  for_each            = toset(local.business_lines)
+  resource_group_name = "rg-${each.key}-${var.environment}"
+  display_name        = "${each.key}-${var.environment}"
+}
 # Note: Budget enforcement is documented in HLD. Actual budgets
 # are created via Alibaba Cloud BSS console or API.

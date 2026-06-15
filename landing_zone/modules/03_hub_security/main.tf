@@ -5,14 +5,14 @@ data "alicloud_zones" "available" {
 # Hub VPC
 resource "alicloud_vpc" "hub" {
   vpc_name   = "${var.environment}-hub-vpc"
-  cidr_block = var.hub_vpc_cidr  # Use variable instead of hardcoded
+  cidr_block = var.hub_vpc_cidr
   tags       = var.tags
 }
 
-# Update subnet CIDRs to be relative to the new /16
+# VSwitches
 resource "alicloud_vswitch" "untrusted" {
   vpc_id       = alicloud_vpc.hub.id
-  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 1)   # Was: 10.0.1.0/24, now: 10.20.1.0/24
+  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 1)
   zone_id      = data.alicloud_zones.available.zones[0].id
   vswitch_name = "${var.environment}-untrusted"
   tags         = var.tags
@@ -20,7 +20,7 @@ resource "alicloud_vswitch" "untrusted" {
 
 resource "alicloud_vswitch" "trusted" {
   vpc_id       = alicloud_vpc.hub.id
-  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 2)   # Was: 10.0.2.0/24, now: 10.20.2.0/24
+  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 2)
   zone_id      = data.alicloud_zones.available.zones[0].id
   vswitch_name = "${var.environment}-trusted"
   tags         = var.tags
@@ -28,27 +28,27 @@ resource "alicloud_vswitch" "trusted" {
 
 resource "alicloud_vswitch" "ops" {
   vpc_id       = alicloud_vpc.hub.id
-  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 3)   # Was: 10.0.3.0/24, now: 10.20.3.0/24
+  cidr_block   = cidrsubnet(var.hub_vpc_cidr, 8, 3)
   zone_id      = data.alicloud_zones.available.zones[0].id
   vswitch_name = "${var.environment}-ops"
   tags         = var.tags
 }
 
-
-# --- Self-managed KMS key (mirrors self-purchased KMS for at-rest encryption) ---
+# KMS Key
 resource "alicloud_kms_key" "hub" {
   description            = "Central KMS for at-rest encryption"
   pending_window_in_days = 7
   status                 = "Enabled"
 }
 
-# --- Palo Alto firewall mock (HA pair of ECS) ---
+# Security Group for Palo Alto
 resource "alicloud_security_group" "fw" {
   security_group_name = "${var.environment}-palo-alto-sg"
-  vpc_id = alicloud_vpc.hub.id
-  tags   = var.tags
+  vpc_id              = alicloud_vpc.hub.id
+  tags                = var.tags
 }
 
+# Palo Alto Instances
 resource "alicloud_instance" "palo_alto" {
   count                 = 2
   instance_name         = "${var.environment}-palo-alto-${count.index}"
@@ -58,10 +58,16 @@ resource "alicloud_instance" "palo_alto" {
   security_groups       = [alicloud_security_group.fw.id]
   system_disk_category  = "cloud_essd"
   system_disk_encrypted = true
-  tags = merge(var.tags, { Role = "Firewall", Vendor = "PaloAlto", Mock = "true" })
+  tags                  = merge(var.tags, { Role = "Firewall", Vendor = "PaloAlto", Mock = "true" })
 }
 
-# Route 0.0.0.0/0 through firewall FIRST (north-south enforcement)
+# Data source to get ENI ID after instance creation
+data "alicloud_network_interfaces" "palo_alto_eni" {
+  depends_on  = [alicloud_instance.palo_alto]
+  instance_id = alicloud_instance.palo_alto[0].id
+}
+
+# Route Table for Trusted Subnet - force traffic through Palo Alto
 resource "alicloud_route_table" "trusted_rt" {
   vpc_id           = alicloud_vpc.hub.id
   route_table_name = "${var.environment}-trusted-rt"
@@ -76,22 +82,19 @@ resource "alicloud_route_entry" "to_firewall" {
   route_table_id        = alicloud_route_table.trusted_rt.id
   destination_cidrblock = "0.0.0.0/0"
   nexthop_type          = "NetworkInterface"
-  nexthop_id            = alicloud_instance.palo_alto[0].alicloud_instance.palo_alto[0].primary_network_interface_id
+  nexthop_id            = data.alicloud_network_interfaces.palo_alto_eni.ids[0]
 }
 
-# --- Unified ingress: internal SLB after firewall ---
+# Unified Ingress SLB
 resource "alicloud_slb_load_balancer" "ingress" {
-  load_balancer_name   = "${var.environment}-unified-ingress"
-  vswitch_id           = alicloud_vswitch.trusted.id
-  load_balancer_spec   = "slb.s2.small"
-  address_type         = "intranet"
-  tags                 = var.tags
+  load_balancer_name = "${var.environment}-unified-ingress"
+  vswitch_id         = alicloud_vswitch.trusted.id
+  load_balancer_spec = "slb.s2.small"
+  address_type       = "intranet"
+  tags               = var.tags
 }
 
-# --- WAF (cloud-native; protects north-south) ---
-# NOTE: alicloud_waf_instance billing is subscription; toggle off in demo if needed.
-
-# --- CEN Transit Router (HK primary backbone) ---
+# CEN
 resource "alicloud_cen_instance" "backbone" {
   cen_instance_name = "${var.environment}-hk-sg-backbone"
   description       = "HongKong primary CEN backbone"
@@ -99,8 +102,8 @@ resource "alicloud_cen_instance" "backbone" {
 }
 
 resource "alicloud_cen_transit_router" "tr" {
-  cen_id                  = alicloud_cen_instance.backbone.id
-  transit_router_name     = "${var.environment}-tr-hk"
+  cen_id              = alicloud_cen_instance.backbone.id
+  transit_router_name = "${var.environment}-tr-hk"
 }
 
 resource "alicloud_cen_transit_router_vpc_attachment" "hub" {
@@ -113,9 +116,9 @@ resource "alicloud_cen_transit_router_vpc_attachment" "hub" {
   }
 }
 
-# Cross-border bandwidth: China (HK) <-> Asia-Pacific (SG)
+# CEN Bandwidth Package
 resource "alicloud_cen_bandwidth_package" "cross_border" {
-  geographic_region_a_id     = "China" # doesn't allow specific regions
+  geographic_region_a_id     = "China"
   geographic_region_b_id     = "Asia-Pacific"
   bandwidth                  = var.backbone_bandwidth_mbps
   cen_bandwidth_package_name = "${var.environment}-hk-sg-bwp"
