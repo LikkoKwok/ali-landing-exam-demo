@@ -1,22 +1,22 @@
-# Azure Entra ID as SAML IdP
-resource "alicloud_ram_saml_provider" "azure_ad" {
-  saml_provider_name             = "AzureEntraID-SSO"
-  description                    = "Azure Entra ID SAML federation"
-  encodedsaml_metadata_document  = var.azure_ad_metadata_url
-}
+# Azure Entra ID as SAML IdP (to be provided)
+# resource "alicloud_ram_saml_provider" "azure_ad" {
+#   saml_provider_name             = "AzureEntraID-SSO"
+#   description                    = "Azure Entra ID SAML federation"
+#   encodedsaml_metadata_document  = var.azure_ad_metadata_url
+# }
 
 locals {
   ai_roles = {
-    ai_platform_admin = "AliyunPAIFullAccess"
-    ml_engineer       = "AliyunPAIDeveloperAccess"
-    data_scientist    = "AliyunOSSReadOnlyAccess"
-    model_reviewer    = "AliyunPAIReadOnlyAccess"
-    ai_auditor        = "AliyunActionTrailReadOnlyAccess"
+    ai-platform-admin = "AliyunPAIFullAccess"
+    ml-engineer       = "AliyunPAIDeveloperAccess"
+    data-scientist    = "AliyunOSSReadOnlyAccess"
+    model-reviewer    = "AliyunPAIReadOnlyAccess"
+    ai-auditor        = "AliyunActionTrailReadOnlyAccess"
   }
   infra_roles = {
-    cloud_admin   = "AdministratorAccess"
+    cloud-admin   = "AdministratorAccess"
     dba           = "AliyunRDSFullAccess"
-    network_admin = "AliyunVPCFullAccess"
+    network-admin = "AliyunVPCFullAccess"
   }
 }
 
@@ -30,7 +30,7 @@ resource "alicloud_ram_role" "federated" {
     Statement = [{
       Action    = "sts:AssumeRole"
       Effect    = "Allow"
-      Principal = { Federated = [alicloud_ram_saml_provider.azure_ad.arn] }
+      # Principal = { Federated = [alicloud_ram_saml_provider.azure_ad.arn] }
       Condition = {
         StringEquals = { "saml:recipient" = "https://signin.alibabacloud.com/saml-role/sso" }
       }

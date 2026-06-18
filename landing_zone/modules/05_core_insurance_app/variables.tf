@@ -40,7 +40,7 @@ variable "kms_key_id" {
 variable "db_instance_class" {
   description = "RDS instance class for SQL Server"
   type        = string
-  default     = "rds.mssql.s2.large"
+  default     = "rds.mssql.s2.large" # need to make sure db tier is available in HK region
 }
 
 variable "db_storage_gb" {

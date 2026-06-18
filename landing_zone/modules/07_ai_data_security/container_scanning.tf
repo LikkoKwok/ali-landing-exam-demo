@@ -9,6 +9,7 @@ resource "alicloud_cr_ee_instance" "acr" {
   instance_name  = "ai-acr-${var.environment}"
   instance_type  = "Standard"  # Changed from "Enterprise"
   payment_type   = "Subscription"
+  period         = 1
 }
 
 # Note: Vulnerability scanning is enabled automatically on ACR EE

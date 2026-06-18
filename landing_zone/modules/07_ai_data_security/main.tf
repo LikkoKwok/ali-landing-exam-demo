@@ -33,3 +33,4 @@ resource "alicloud_data_works_project" "dsc_pipeline" {
 
 # NOTE: Sensitive Data Discovery (DSC/SDDP) classification rules are configured
 # on raw_zone; the redaction task is orchestrated by the DataWorks node.
+

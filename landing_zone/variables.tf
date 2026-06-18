@@ -124,3 +124,9 @@ variable "common_tags" {
   type    = map(string)
   default = {}
 }
+
+variable "transit_router_id" {
+  description = "Existing Transit Router ID"
+  type        = string
+  default     = "tr-j6c5jwesgz9rc5ir9tqxn"
+}

@@ -7,7 +7,7 @@ data "alicloud_zones" "gpu" {
 # Change from hardcoded 10.30.0.0/16 to variable
 resource "alicloud_vpc" "ai" {
   vpc_name   = "${var.environment}-ai-vpc"
-  cidr_block = var.ai_lab_vpc_cidr  # Add this variable
+  cidr_block = var.ai_lab_vpc_cidr
   tags       = merge(var.tags, { Workload = "AI" })
 }
 

@@ -22,6 +22,13 @@ locals {
   ai_accounts    = ["ai-training", "ai-inference"]
 }
 
+resource "alicloud_resource_manager_account" "reseller_member_account" {
+  display_name        = "Project-B-Dev-Account"
+  # must set before terraform can provision resource directory ac on alicloud if using ac under reseller ac
+  resell_account_type = "resell"  
+}
+
+
 resource "alicloud_resource_manager_account" "insurance" {
   for_each     = toset(local.insurance_envs)
   display_name = "core-insurance-${each.key}"

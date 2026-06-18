@@ -17,3 +17,9 @@ bastion_instance_type   = "ecs.e-c1m1.large"
 # Log
 log_retention_days      = 30
 management_vpc_cidr     = "10.100.0.0/16"
+
+# Account IDs
+ai_account_id          = "5858781688988035"
+hub_account_id         = "5858781688988035"
+log_account_id         = "5858781688988035"
+app_account_id         = "5858781688988035"

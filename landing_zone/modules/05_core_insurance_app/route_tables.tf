@@ -1,30 +1,88 @@
 # ============================================
-# ROUTE TABLES: FORCE TRAFFIC THROUGH PALO ALTO
-# Requirement: All outbound traffic must pass through
-# Palo Alto firewall first (north-south protection)
+# ROUTE TABLES FOR EACH ENVIRONMENT WEB SUBNET
+# Requirement: Force all outbound traffic through Palo Alto firewall
 # ============================================
 
-# Create a custom route table for each environment's web subnet
-resource "alicloud_route_table" "env_web" {
-  for_each         = local.environments
-  vpc_id           = alicloud_vpc.core_insurance.id  # Changed from webapp
-  route_table_name = "${var.environment}-${each.key}-web-rt"
-  description      = "Route table forcing ${each.key} web traffic through Palo Alto"
+# SIT Route Table
+resource "alicloud_route_table" "sit_web_rt" {
+  vpc_id           = alicloud_vpc.core_insurance.id
+  route_table_name = "${var.environment}-sit-web-rt"
+  description      = "Forces SIT web traffic through Palo Alto"
 }
 
-# Default enforce each web subnet in every environment route traffic to 0.0.0.0/0 pointing to the Palo Alto's Trust ENI
-resource "alicloud_route_entry" "force_to_palo_alto" {
-  for_each               = local.environments
-  route_table_id         = alicloud_route_table.env_web[each.key].id
-  destination_cidrblock  = "0.0.0.0/0"
-  nexthop_type           = "NetworkInterface"
-  nexthop_id             = var.palo_alto_trust_eni_id
-  description            = "Force all outbound traffic through Palo Alto firewall"
+resource "alicloud_route_entry" "sit_default_route" {
+  count                = 0   # temp disable, after set use: var.palo_alto_trust_eni_id != "" ? 1 : 0
+  route_table_id       = alicloud_route_table.sit_web_rt.id
+  destination_cidrblock = "0.0.0.0/0"
+  nexthop_type         = "NetworkInterface"
+  nexthop_id           = var.palo_alto_trust_eni_id
+  description          = "Force SIT outbound traffic through Palo Alto"
 }
 
-# Attach route table to each web subnet
-resource "alicloud_route_table_attachment" "attach_web_subnet" {
-  for_each       = local.environments
-  vswitch_id     = alicloud_vswitch.web[each.key].id
-  route_table_id = alicloud_route_table.env_web[each.key].id
+resource "alicloud_route_table_attachment" "sit_attach" {
+  vswitch_id     = alicloud_vswitch.sit_web.id
+  route_table_id = alicloud_route_table.sit_web_rt.id
+}
+
+# UAT Route Table
+resource "alicloud_route_table" "uat_web_rt" {
+  vpc_id           = alicloud_vpc.core_insurance.id
+  route_table_name = "${var.environment}-uat-web-rt"
+  description      = "Forces UAT web traffic through Palo Alto"
+}
+
+resource "alicloud_route_entry" "uat_default_route" {
+  count                = 0   # temp disable, after set use: var.palo_alto_trust_eni_id != "" ? 1 : 0
+  route_table_id       = alicloud_route_table.uat_web_rt.id
+  destination_cidrblock = "0.0.0.0/0"
+  nexthop_type         = "NetworkInterface"
+  nexthop_id           = var.palo_alto_trust_eni_id
+  description          = "Force UAT outbound traffic through Palo Alto"
+}
+
+resource "alicloud_route_table_attachment" "uat_attach" {
+  vswitch_id     = alicloud_vswitch.uat_web.id
+  route_table_id = alicloud_route_table.uat_web_rt.id
+}
+
+# PreProd Route Table
+resource "alicloud_route_table" "preprod_web_rt" {
+  vpc_id           = alicloud_vpc.core_insurance.id
+  route_table_name = "${var.environment}-preprod-web-rt"
+  description      = "Forces PreProd web traffic through Palo Alto"
+}
+
+resource "alicloud_route_entry" "preprod_default_route" {
+  count                = 0   # temp disable, after set use: var.palo_alto_trust_eni_id != "" ? 1 : 0
+  route_table_id       = alicloud_route_table.preprod_web_rt.id
+  destination_cidrblock = "0.0.0.0/0"
+  nexthop_type         = "NetworkInterface"
+  nexthop_id           = var.palo_alto_trust_eni_id
+  description          = "Force PreProd outbound traffic through Palo Alto"
+}
+
+resource "alicloud_route_table_attachment" "preprod_attach" {
+  vswitch_id     = alicloud_vswitch.preprod_web.id
+  route_table_id = alicloud_route_table.preprod_web_rt.id
+}
+
+# Prod Route Table
+resource "alicloud_route_table" "prod_web_rt" {
+  vpc_id           = alicloud_vpc.core_insurance.id
+  route_table_name = "${var.environment}-prod-web-rt"
+  description      = "Forces Prod web traffic through Palo Alto"
+}
+
+resource "alicloud_route_entry" "prod_default_route" {
+  count                = 0   # temp disable, after set use: var.palo_alto_trust_eni_id != "" ? 1 : 0
+  route_table_id       = alicloud_route_table.prod_web_rt.id
+  destination_cidrblock = "0.0.0.0/0"
+  nexthop_type         = "NetworkInterface"
+  nexthop_id           = var.palo_alto_trust_eni_id
+  description          = "Force Prod outbound traffic through Palo Alto"
+}
+
+resource "alicloud_route_table_attachment" "prod_attach" {
+  vswitch_id     = alicloud_vswitch.prod_web.id
+  route_table_id = alicloud_route_table.prod_web_rt.id
 }

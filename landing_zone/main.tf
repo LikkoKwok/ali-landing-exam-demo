@@ -27,6 +27,7 @@ module "hub_security" {
   region                  = var.region
   secondary_region        = var.secondary_region
   hub_vpc_cidr            = var.hub_vpc_cidr
+  transit_router_id       = var.transit_router_id
   firewall_instance_type  = var.firewall_instance_type
   backbone_bandwidth_mbps = var.backbone_bandwidth_mbps
   az_count                = var.az_count

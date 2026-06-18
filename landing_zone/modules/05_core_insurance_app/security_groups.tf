@@ -141,6 +141,7 @@ resource "alicloud_security_group" "uat_web_sg" {
 resource "alicloud_security_group_rule" "uat_web_http" {
   type              = "ingress"
   ip_protocol       = "tcp"
+  port_range        = "80/80"
   security_group_id = alicloud_security_group.uat_web_sg.id
   cidr_ip    = "10.20.2.0/24"
   description       = "HTTP via Palo Alto"

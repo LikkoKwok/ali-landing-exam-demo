@@ -35,11 +35,11 @@ resource "alicloud_vswitch" "ops" {
 }
 
 # KMS Key
-resource "alicloud_kms_key" "hub" {
-  description            = "Central KMS for at-rest encryption"
-  pending_window_in_days = 7
-  status                 = "Enabled"
-}
+# resource "alicloud_kms_key" "hub" {
+#   description            = "Central KMS for at-rest encryption"
+#   pending_window_in_days = 7
+#   status                 = "Enabled"
+# }
 
 # Security Group for Palo Alto
 resource "alicloud_security_group" "fw" {
@@ -101,14 +101,10 @@ resource "alicloud_cen_instance" "backbone" {
   tags              = var.tags
 }
 
-resource "alicloud_cen_transit_router" "tr" {
-  cen_id              = alicloud_cen_instance.backbone.id
-  transit_router_name = "${var.environment}-tr-hk"
-}
 
 resource "alicloud_cen_transit_router_vpc_attachment" "hub" {
   cen_id            = alicloud_cen_instance.backbone.id
-  transit_router_id = alicloud_cen_transit_router.tr.transit_router_id
+  transit_router_id = var.transit_router_id
   vpc_id            = alicloud_vpc.hub.id
   zone_mappings {
     zone_id    = data.alicloud_zones.available.zones[0].id
@@ -116,15 +112,32 @@ resource "alicloud_cen_transit_router_vpc_attachment" "hub" {
   }
 }
 
-# CEN Bandwidth Package
-resource "alicloud_cen_bandwidth_package" "cross_border" {
-  geographic_region_a_id     = "China"
-  geographic_region_b_id     = "Asia-Pacific"
-  bandwidth                  = var.backbone_bandwidth_mbps
-  cen_bandwidth_package_name = "${var.environment}-hk-sg-bwp"
-}
+# CEN Bandwidth Package (temp disable KMS for budget reason)
+# resource "alicloud_cen_bandwidth_package" "cross_border" {
+#   geographic_region_a_id     = "China"
+#   geographic_region_b_id     = "Asia-Pacific"
+#   bandwidth                  = var.backbone_bandwidth_mbps
+#   cen_bandwidth_package_name = "${var.environment}-hk-sg-bwp"
+# }
 
-resource "alicloud_cen_bandwidth_package_attachment" "attach" {
-  instance_id          = alicloud_cen_instance.backbone.id
-  bandwidth_package_id = alicloud_cen_bandwidth_package.cross_border.id
+# resource "alicloud_cen_bandwidth_package_attachment" "attach" {
+#   instance_id          = alicloud_cen_instance.backbone.id
+#   bandwidth_package_id = alicloud_cen_bandwidth_package.cross_border.id
+# }
+
+# ============================================
+# ATTACH DATAWORKS VPC TO CEN
+# ============================================
+
+resource "alicloud_cen_transit_router_vpc_attachment" "dataworks" {
+  count = var.dataworks_vpc_id != "" ? 1 : 0
+  
+  cen_id            = alicloud_cen_instance.backbone.id
+  transit_router_id = var.transit_router_id
+  vpc_id            = var.dataworks_vpc_id
+  
+  zone_mappings {
+    zone_id    = data.alicloud_zones.available.zones[0].id
+    vswitch_id = var.dataworks_vswitch_id
+  }
 }

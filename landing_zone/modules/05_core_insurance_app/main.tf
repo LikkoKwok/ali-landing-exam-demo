@@ -171,6 +171,7 @@ resource "alicloud_resource_manager_resource_group" "insurance_prod" {
 
 # Production Database
 resource "alicloud_db_instance" "core_prod" {
+  count                = 0  # temporarily disable
   engine               = "SQLServer"
   engine_version       = "2019_ent"
   instance_type        = var.db_instance_class
@@ -185,8 +186,16 @@ resource "alicloud_db_instance" "core_prod" {
 # ============================================
 # ENCRYPTED OSS BUCKETS PER ENVIRONMENT
 # ============================================
+
+# create random string to ensure unique bucket names
+resource "random_string" "bucket_suffix" {
+  length  = 6
+  special = false
+  upper   = false
+}
+
 resource "alicloud_oss_bucket" "app_data_sit" {
-  bucket = "insurance-app-sit-${var.environment}"
+  bucket = "insurance-app-sit-${var.environment}-${random_string.bucket_suffix.result}"
   tags   = merge(var.tags, { Environment = "SIT" })
 }
 
@@ -197,7 +206,7 @@ resource "alicloud_oss_bucket_server_side_encryption" "app_enc_sit" {
 }
 
 resource "alicloud_oss_bucket" "app_data_uat" {
-  bucket = "insurance-app-uat-${var.environment}"
+  bucket = "insurance-app-uat-${var.environment}-${random_string.bucket_suffix.result}"
   tags   = merge(var.tags, { Environment = "UAT" })
 }
 
@@ -208,7 +217,7 @@ resource "alicloud_oss_bucket_server_side_encryption" "app_enc_uat" {
 }
 
 resource "alicloud_oss_bucket" "app_data_preprod" {
-  bucket = "insurance-app-preprod-${var.environment}"
+  bucket = "insurance-app-preprod-${var.environment}-${random_string.bucket_suffix.result}"
   tags   = merge(var.tags, { Environment = "PreProd" })
 }
 
@@ -219,7 +228,7 @@ resource "alicloud_oss_bucket_server_side_encryption" "app_enc_preprod" {
 }
 
 resource "alicloud_oss_bucket" "app_data_prod" {
-  bucket = "insurance-app-prod-${var.environment}"
+  bucket = "insurance-app-prod-${var.environment}-${random_string.bucket_suffix.result}"
   tags   = merge(var.tags, { Environment = "Prod" })
 }
 

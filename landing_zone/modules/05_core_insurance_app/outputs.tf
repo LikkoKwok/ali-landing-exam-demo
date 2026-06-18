@@ -12,5 +12,5 @@ output "resource_group_id" {
 }
 
 output "db_connection" {
-  value = alicloud_db_instance.core_prod.connection_string
+  value = alicloud_db_instance.core_prod[0].connection_string
 }
