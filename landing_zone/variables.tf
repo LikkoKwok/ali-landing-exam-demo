@@ -51,10 +51,17 @@ variable "shared_service_vpc_cidr" {
 # ============================================
 # ACCOUNT IDS (for assume_role)
 # ============================================
-variable "hub_account_id" { type = string }
-variable "log_account_id" { type = string }
-variable "app_account_id" { type = string }
-variable "ai_account_id"  { type = string }
+variable "account_ids" {
+  type = map(string)
+  default = {
+    shared_service = "5947182043430388"
+    hub_security    = "5204482043670830"
+    log    = "5512782043745792"
+    app    = "5641082043830083"
+    ai_inference = "5025582043875056"
+    ai_training = "5977182043911351"
+  }
+}
 
 # ============================================
 # COMPUTE CONFIGURATION

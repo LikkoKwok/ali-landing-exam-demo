@@ -1,15 +1,14 @@
 # ============================================
 # CONTAINER IMAGE SCANNING ENFORCEMENT
-# Note: Use ACR Enterprise with built-in scanning
+# Production: Use ACR Enterprise with built-in scanning
 # ============================================
 
 # Valid instance_type values: Basic, Standard, Advanced (not Enterprise)
+# Use free personal edition
 resource "alicloud_cr_ee_instance" "acr" {
-  count          = var.enable_container_scanning ? 1 : 0
+  count          = 0  # Disable enterprise version for cost saving demo purpo
   instance_name  = "ai-acr-${var.environment}"
-  instance_type  = "Standard"  # Changed from "Enterprise"
+  instance_type  = "Basic"
   payment_type   = "Subscription"
   period         = 1
 }
-
-# Note: Vulnerability scanning is enabled automatically on ACR EE

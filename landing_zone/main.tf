@@ -10,7 +10,6 @@ module "master_account" {
   source      = "./modules/01_master_account"
   environment = var.environment
   tags        = local.base_tags
-  providers   = { alicloud = alicloud.master }
 }
 
 module "identity_sso" {
@@ -51,7 +50,7 @@ module "shared_service" {
   cen_id             = module.hub_security.cen_id
   transit_router_id  = module.hub_security.transit_router_id
   tags               = local.base_tags
-  providers          = { alicloud = alicloud.hub }
+  providers          = { alicloud = alicloud.shared }
 }
 
 
@@ -78,7 +77,7 @@ module "pai_platform" {
   gpu_instance_type = var.gpu_instance_type
   kms_key_id        = module.hub_security.kms_key_id
   tags              = local.base_tags
-  providers         = { alicloud = alicloud.ai }
+  providers         = { alicloud = alicloud.ai_training }
 }
 
 module "ai_data_security" {
@@ -86,14 +85,14 @@ module "ai_data_security" {
   environment = var.environment
   kms_key_id  = module.hub_security.kms_key_id
   tags        = local.base_tags
-  providers   = { alicloud = alicloud.ai }
+  providers   = { alicloud = alicloud.ai_training }
 }
 
 module "ai_guardrails" {
   source      = "./modules/08_ai_guardrails"
   environment = var.environment
   tags        = local.base_tags
-  providers   = { alicloud = alicloud.ai }
+  providers   = { alicloud = alicloud.ai_training }
 }
 
 module "financial_governance" {
@@ -117,7 +116,7 @@ module "model_governance" {
   environment = var.environment
   kms_key_id  = module.hub_security.kms_key_id
   tags        = local.base_tags
-  providers   = { alicloud = alicloud.ai }
+  providers   = { alicloud = alicloud.ai_inference }
 }
 
 module "observability" {

@@ -1,47 +1,39 @@
-resource "alicloud_resource_manager_resource_directory" "rd" {
-  status = "Enabled"
-}
+# ============================================
+# Terraform does not support automatic member account creation with Reseller Account,
+# manually creation of member accounts via console is required before terraform can manage the accounts. 
+# Please follow the steps below to create member accounts under reseller account:
+# ============================================
 
-resource "alicloud_resource_manager_folder" "management" {
-  folder_name      = "Management-OU"
-  parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
-}
+# resource "alicloud_resource_manager_resource_directory" "rd" {
+#   status = "Enabled"
+# }
 
-resource "alicloud_resource_manager_folder" "core_insurance" {
-  folder_name      = "Core-Insurance-OU"
-  parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
-}
+# resource "alicloud_resource_manager_folder" "management" {
+#   folder_name      = "Management-OU"
+#   parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
+# }
 
-resource "alicloud_resource_manager_folder" "ai_lab" {
-  folder_name      = "AI-Innovation-Lab-OU"
-  parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
-}
+# resource "alicloud_resource_manager_folder" "core_insurance" {
+#   folder_name      = "Core-Insurance-OU"
+#   parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
+# }
 
-locals {
-  insurance_envs = ["prod", "preprod", "uat", "sit"]
-  ai_accounts    = ["ai-training", "ai-inference"]
-}
+# resource "alicloud_resource_manager_folder" "ai_lab" {
+#   folder_name      = "AI-Innovation-Lab-OU"
+#   parent_folder_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
+# }
 
-resource "alicloud_resource_manager_account" "reseller_member_account" {
-  display_name        = "Project-B-Dev-Account"
-  # must set before terraform can provision resource directory ac on alicloud if using ac under reseller ac
-  resell_account_type = "resell"  
-}
+# resource "alicloud_resource_manager_account" "reseller_member_account" {
+#   display_name        = "Project-Account-Terraform"
+#   resell_account_type = "resell"  
+# }
 
 
-resource "alicloud_resource_manager_account" "insurance" {
-  for_each     = toset(local.insurance_envs)
-  display_name = "core-insurance-${each.key}"
-  folder_id    = alicloud_resource_manager_folder.core_insurance.id
-}
-
-resource "alicloud_resource_manager_account" "ai" {
-  for_each     = toset(local.ai_accounts)
-  display_name = each.key
-  folder_id    = alicloud_resource_manager_folder.ai_lab.id
-}
-
+# ============================================
 # Control Policy: forbid deletion of central log store (Requirement 6)
+# Action Trail
+# ============================================
+
 resource "alicloud_resource_manager_control_policy" "protect_logs" {
   control_policy_name = "deny-logstore-deletion"
   description         = "Prevents deletion of central audit logs"
@@ -81,22 +73,15 @@ resource "alicloud_resource_manager_control_policy_attachment" "trail_root" {
   target_id = alicloud_resource_manager_resource_directory.rd.root_folder_id
 }
 
-resource "alicloud_resource_manager_account" "hub" {
-  count       = 1
-  display_name = "hub-account"
-}
 
-resource "alicloud_resource_manager_account" "log" {
-  count       = 1
-  display_name = "log-account"
-}
-
-resource "alicloud_resource_manager_account" "app" {
-  count       = 1
-  display_name = "app-account"
-}
-
-resource "alicloud_resource_manager_account" "ai_lab" {
-  count       = 1
-  display_name = "ai-lab-account"
+locals {
+  # manual creation of member accounts under reseller account
+  manual_accounts = {
+    shared_service = "5947182043430388"
+    hub_security    = "5204482043670830"
+    log    = "5512782043745792"
+    app    = "5641082043830083"
+    ai_inference = "5025582043875056"
+    ai_training = "5977182043911351"
+  }
 }

@@ -9,3 +9,4 @@ aliyun
 *.tfvars.json
 *.log
 *.tfplan
+backend.tf
