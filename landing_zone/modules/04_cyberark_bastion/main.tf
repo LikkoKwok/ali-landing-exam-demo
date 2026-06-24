@@ -72,27 +72,10 @@ resource "alicloud_slb_load_balancer" "unified_ingress" {
 }
 
 # ============================================
-# MANAGEMENT VPC (for bastion host)
-# ============================================
-resource "alicloud_vpc" "management" {
-  vpc_name   = "${var.environment}-management-vpc"
-  cidr_block = var.management_vpc_cidr
-  tags       = merge(var.tags, { Service = "management" })
-}
-
-resource "alicloud_vswitch" "management" {
-  vpc_id       = alicloud_vpc.management.id
-  cidr_block   = cidrsubnet(var.management_vpc_cidr, 8, 1)  # 10.100.1.0/24
-  zone_id      = data.alicloud_zones.available.zones[0].id
-  vswitch_name = "${var.environment}-management-subnet"
-  tags         = merge(var.tags, { Service = "management" })
-}
-
-# ============================================
 # BASTION HOST (Jump server)
 # ============================================
 resource "alicloud_security_group" "bastion_sg" {
-  vpc_id      = alicloud_vpc.management.id
+  vpc_id      = alicloud_vpc.shared_service.id
   security_group_name        = "${var.environment}-bastion-sg"
   description = "Security group for bastion host"
   tags        = merge(var.tags, { Service = "bastion" })
@@ -124,7 +107,7 @@ resource "alicloud_instance" "bastion" {
   instance_name   = "${var.environment}-bastion-host"
   instance_type   = var.instance_type
   image_id        = var.image_id
-  vswitch_id      = alicloud_vswitch.management.id
+  vswitch_id      = alicloud_vswitch.ops_bastion.id
   security_groups = [alicloud_security_group.bastion_sg.id]
   
   # Bind a public IP
@@ -150,19 +133,5 @@ resource "alicloud_cen_transit_router_vpc_attachment" "shared_service" {
   zone_mappings {
     zone_id    = data.alicloud_zones.available.zones[0].id
     vswitch_id = alicloud_vswitch.unified_ingress.id
-  }
-}
-
-# ============================================
-# ATTACH MANAGEMENT VPC TO CEN
-# ============================================
-resource "alicloud_cen_transit_router_vpc_attachment" "management" {
-  # count             = var.cen_id != "" ? 1 : 0
-  cen_id            = var.cen_id
-  transit_router_id = var.transit_router_id
-  vpc_id            = alicloud_vpc.management.id
-  zone_mappings {
-    zone_id    = data.alicloud_zones.available.zones[0].id
-    vswitch_id = alicloud_vswitch.management.id
   }
 }

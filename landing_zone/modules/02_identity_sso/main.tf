@@ -44,7 +44,7 @@ resource "alicloud_ram_role" "federated" {
       Action    = "sts:AssumeRole"
       Effect    = "Allow"
       Principal = {
-        Federated = [alicloud_ram_saml_provider.azure_ad.arn]
+        # Federated = [alicloud_ram_saml_provider.azure_ad.arn]
       }
       Condition = {
         StringEquals = {
@@ -61,13 +61,13 @@ resource "alicloud_ram_role" "federated" {
 # ATTACH SYSTEM POLICIES TO ROLES
 # ============================================
 
-resource "alicloud_ram_role_policy_attachment" "attach" {
-  for_each = merge(local.ai_roles, local.infra_roles)
+# resource "alicloud_ram_role_policy_attachment" "attach" {
+#   for_each = merge(local.ai_roles, local.infra_roles)
 
-  role_name   = alicloud_ram_role.federated[each.key].role_name
-  policy_name = each.value
-  policy_type = "System"
-}
+#   role_name   = alicloud_ram_role.federated[each.key].role_name
+#   policy_name = each.value
+#   policy_type = "System"
+# }
 
 # ============================================
 # PER-APPLICATION SERVICE ROLE (AI Model Invocation)

@@ -49,7 +49,6 @@ module "shared_service" {
   source             = "./modules/04_cyberark_bastion"
   environment        = var.environment
   shared_service_vpc_cidr = var.shared_service_vpc_cidr
-  management_vpc_cidr = var.management_vpc_cidr
   region             = var.region
   az_count           = var.az_count
   instance_type      = var.bastion_instance_type
@@ -65,7 +64,6 @@ module "shared_service" {
 module "core_insurance_app" {
   source                  = "./modules/05_core_insurance_app"
   environment             = var.environment
-  management_vpc_cidr     = var.management_vpc_cidr
   core_insurance_vpc_cidr = var.core_insurance_vpc_cidr
   hub_attachment_id       = module.hub_security.hub_vpc_attachment_id
   transit_router_id       = module.hub_security.transit_router_id
@@ -80,9 +78,10 @@ module "pai_platform" {
   source            = "./modules/06_pai_platform"
   count             = var.enable_gpu_cluster ? 1 : 0
   environment       = var.environment
-  vpc_cidr          = var.ai_lab_vpc_cidr
+  ai_lab_vpc_cidr   = var.ai_lab_vpc_cidr
   hub_vpc_id        = module.hub_security.hub_vpc_id
   gpu_instance_type = var.gpu_instance_type
+  enable_dsw_instance = var.enable_dsw_instance
   kms_key_id        = module.hub_security.kms_key_id
   tags              = local.base_tags
   providers         = { alicloud = alicloud.ai_training }

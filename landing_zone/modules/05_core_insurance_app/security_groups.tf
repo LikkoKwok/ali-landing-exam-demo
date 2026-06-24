@@ -292,7 +292,7 @@ resource "alicloud_security_group_rule" "prod_web_ssh_restricted" {
   ip_protocol       = "tcp"
   port_range        = "22/22"
   security_group_id = alicloud_security_group.prod_web_sg.id
-  cidr_ip           = var.management_vpc_cidr
+  cidr_ip           = "10.10.30.0/24"
   description       = "SSH from restricted admin IPs only"
 }
 

@@ -21,16 +21,10 @@ variable "az_count" {
   default     = 2
 }
 
-variable "management_vpc_cidr" {
-  description = "CIDR block for Management VPC (bastion host network)"
-  type        = string
-  default     = "10.100.0.0/16"
-}
-
 variable "my_public_ip" {
   description = "Your public IP for SSH access to bastion host (e.g., '203.0.113.50/32')"
   type        = string
-  default     = ""
+  default     = ""  # set laptop ip for demo
 }
 
 variable "instance_type" {

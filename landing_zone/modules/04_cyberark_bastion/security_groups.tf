@@ -84,14 +84,14 @@ resource "alicloud_security_group" "cyberark_pvwa_sg" {
   tags        = merge(var.tags, { Service = "cyberark" })
 }
 
-# PVWA inbound from Management Subnet only
+# PVWA inbound from Ops Subnet only
 resource "alicloud_security_group_rule" "pvwa_https_in" {
   type              = "ingress"
   ip_protocol       = "tcp"
   port_range        = "443/443"
   security_group_id = alicloud_security_group.cyberark_pvwa_sg.id
-  cidr_ip           = cidrsubnet(var.management_vpc_cidr, 8, 1)  # 10.100.1.0/24
-  description       = "HTTPS from management subnet"
+  cidr_ip           = "10.10.30.0/24"
+  description       = "HTTPS from Ops subnet"
 }
 
 resource "alicloud_security_group_rule" "pvwa_ssh_in" {
@@ -99,8 +99,8 @@ resource "alicloud_security_group_rule" "pvwa_ssh_in" {
   ip_protocol       = "tcp"
   port_range        = "22/22"
   security_group_id = alicloud_security_group.cyberark_pvwa_sg.id
-  cidr_ip           = cidrsubnet(var.management_vpc_cidr, 8, 1)  # 10.100.1.0/24
-  description       = "SSH from management subnet"
+  cidr_ip           = "10.10.30.0/24"
+  description       = "SSH from Ops subnet"
 }
 
 resource "alicloud_security_group" "cyberark_vault_sg" {

@@ -1,16 +1,11 @@
-variable "environment"      { type = string }
-variable "gpu_instance_type" { type = string }
-variable "vpc_cidr"          { type = string }
-variable "kms_key_id"        { type = string }
-variable "gpu_max_nodes"     { 
-    type = number
-    default = 4 
-    }
+variable "environment" {
+  type = string
+}
 
-variable "tags"              { 
-    type = map(string)
-    default = {} 
-    }
+variable "tags" {
+  type    = map(string)
+  default = {}
+}
 
 variable "ai_lab_vpc_cidr" {
   description = "CIDR block for AI Lab VPC"
@@ -23,8 +18,19 @@ variable "hub_vpc_id" {
   type        = string
 }
 
-variable "enable_training_jobs" {
-  description = "Enable PAI training jobs (DLC runs) - set to false for cost saving"
+variable "kms_key_id" {
+  description = "KMS key ID for encryption"
+  type        = string
+}
+
+variable "gpu_instance_type" {
+  description = "GPU instance type for AI workloads"
+  type        = string
+  default     = "ecs.gn6i-c4g1.xlarge"
+}
+
+variable "enable_dsw_instance" {
+  description = "Enable PAI DSW instance for demo purposes"
   type        = bool
   default     = false
 }

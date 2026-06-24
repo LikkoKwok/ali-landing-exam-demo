@@ -4,5 +4,10 @@ terraform {
       source = "aliyun/alicloud"
       version = ">= 1.241.0"  # Required for PAI workspace resources
     }
+
+    random = {
+      source  = "hashicorp/random"
+      version = "~> 3.5"
+    }
   }
 }

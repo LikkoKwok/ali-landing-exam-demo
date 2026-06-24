@@ -25,7 +25,3 @@ output "vault_instance_id" {
 output "shared_service_vpc_attachment_id" {
   value = alicloud_cen_transit_router_vpc_attachment.shared_service.id
 }
-
-output "management_vpc_attachment_id" {
-  value = alicloud_cen_transit_router_vpc_attachment.management.id
-}

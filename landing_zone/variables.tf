@@ -72,17 +72,6 @@ variable "az_count" {
   default     = 2
 }
 
-variable "enable_gpu_cluster" {
-  description = "Toggle GPU/AI training workloads"
-  type        = bool
-  default     = false
-}
-
-variable "gpu_instance_type" {
-  type    = string
-  default = "ecs.gn7-c12g1.3xlarge"
-}
-
 variable "firewall_instance_type" {
   type    = string
   default = "ecs.g6.large"
@@ -110,11 +99,11 @@ variable "azure_ad_metadata_url" {
 # SECURITY CONFIGURATION
 # ============================================
 # assume 10.100.0.0/16 as the internal network for admin access to CyberArk and bastion host
-variable "management_vpc_cidr" {
-  description = "CIDR block allowed to access CyberArk PVWA (HTTPS) and SSH"
-  type        = string
-  default     = "10.100.0.0/16"
-}
+# variable "management_vpc_cidr" {
+#   description = "CIDR block allowed to access CyberArk PVWA (HTTPS) and SSH"
+#   type        = string
+#   default     = "10.100.0.0/16"
+# }
 
 # ============================================
 # LOGGING CONFIGURATION
@@ -146,4 +135,28 @@ variable "transit_router_id" {
   description = "Existing Transit Router ID"
   type        = string
   default     = "tr-j6cuc0gmwpgt0vyh1ihzs"
+}
+
+# Private IP of Mock Web Server for bastion demo
+output "mock_web_server_private_ip" {
+  value = module.core_insurance_app.mock_web_server_private_ip
+}
+
+# PAI Related
+variable "enable_gpu_cluster" {
+  description = "Toggle GPU/AI training workloads"
+  type        = bool
+  default     = false
+}
+
+variable "enable_dsw_instance" {
+  description = "Enable PAI DSW instance for demo"
+  type        = bool
+  default     = false
+}
+
+variable "gpu_instance_type" {
+  description = "GPU instance type"
+  type        = string
+  default     = "ecs.gn6i-c4g1.xlarge"
 }

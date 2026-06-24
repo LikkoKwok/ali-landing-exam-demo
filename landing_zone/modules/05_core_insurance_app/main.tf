@@ -256,3 +256,30 @@ resource "alicloud_cen_transit_router_vpc_attachment" "core_insurance" {
     vswitch_id = alicloud_vswitch.prod_web.id  # Representative subnet for attachment
   }
 }
+
+# ============================================
+# MOCK WEB SERVER (FOR DEMO: from bastion curl http://<mock-web-server-private-ip> and receive "Hello from Core Insurance App")
+# ============================================
+resource "alicloud_instance" "mock_web_server" {
+  count = 1
+  instance_name   = "${var.environment}-mock-web-server"
+  instance_type   = "ecs.e-c1m1.large"
+  image_id        = "aliyun_3_x64_20G_alibase_20240528.vhd"
+  vswitch_id      = alicloud_vswitch.prod_web.id
+  security_groups = [alicloud_security_group.prod_web_sg.id]
+
+  user_data = <<-EOF
+    #!/bin/bash
+    yum install -y nginx
+    systemctl start nginx
+    echo "Hello from Core Insurance App - $(hostname)" > /usr/share/nginx/html/index.html
+  EOF
+
+  system_disk_category  = "cloud_essd"
+  system_disk_encrypted = true
+
+  tags = merge(var.tags, { 
+    Service = "mock-web-server",
+    Environment = "Prod"
+  })
+}
