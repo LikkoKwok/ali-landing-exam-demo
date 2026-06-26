@@ -28,4 +28,4 @@ cen_id = "cen-ycdypx620qa3zhdfo7"
 transit_router_id = "tr-j6cuc0gmwpgt0vyh1ihzs"
 
 # Admin
-my_public_ip =  "180.188.172.67/32"   #"223.255.178.182/32"
+my_public_ip =  "223.255.178.182/32"   #"223.255.178.182/32"

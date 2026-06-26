@@ -21,7 +21,7 @@ resource "alicloud_security_group_rule" "sit_web_http" {
   ip_protocol       = "tcp"
   port_range        = "80/80"
   security_group_id = alicloud_security_group.sit_web_sg.id
-  cidr_ip           = "10.10.1.0/24"  # shared service SLB
+  cidr_ip           = "10.10.0.0/16"  # shared service SLB
   description       = "HTTP traffic inspected by Palo Alto and forwarded to SLB"
 }
 
@@ -31,7 +31,7 @@ resource "alicloud_security_group_rule" "sit_web_https" {
   ip_protocol       = "tcp"
   port_range        = "443/443"
   security_group_id = alicloud_security_group.sit_web_sg.id
-  cidr_ip    = "10.10.1.0/24"  # shared service SLB
+  cidr_ip    = "10.10.0.0/16"  # shared service SLB
   description       = "HTTPS traffic inspected by Palo Alto and forwarded to SLB"
 }
 
@@ -81,7 +81,7 @@ resource "alicloud_security_group_rule" "sit_web_out_dns" {
   ip_protocol       = "udp"
   port_range        = "53/53"
   security_group_id = alicloud_security_group.sit_web_sg.id
-  cidr_ip           = "10.10.1.0/24"  # shared service SLB
+  cidr_ip           = "10.10.0.0/16"  # shared service SLB
   description       = "DNS resolution"
 }
 
@@ -91,7 +91,7 @@ resource "alicloud_security_group_rule" "sit_web_deny_direct" {
   ip_protocol       = "tcp"
   port_range        = "1/65535"
   security_group_id = alicloud_security_group.sit_web_sg.id
-  cidr_ip           = "10.10.1.0/24"  # shared service SLB
+  cidr_ip           = "10.10.0.0/16"  # shared service SLB
   policy            = "drop"
   priority          = 100
   description       = "Explicitly block direct internet access - must go through Palo Alto"
@@ -120,7 +120,7 @@ resource "alicloud_security_group_rule" "sit_db_mysql" {
   ip_protocol              = "tcp"
   port_range               = "3306/3306"
   security_group_id        = alicloud_security_group.sit_db_sg.id
-  cidr_ip           = "10.10.1.0/24"
+  cidr_ip           = "10.10.0.0/16"
   description              = "MySQL from SIT web tier only"
 }
 
@@ -143,7 +143,7 @@ resource "alicloud_security_group_rule" "uat_web_http" {
   ip_protocol       = "tcp"
   port_range        = "80/80"
   security_group_id = alicloud_security_group.uat_web_sg.id
-  cidr_ip    = "10.10.1.0/24"
+  cidr_ip    = "10.10.0.0/16"
   description       = "HTTP via Palo Alto"
 }
 
@@ -152,7 +152,7 @@ resource "alicloud_security_group_rule" "uat_web_https" {
   ip_protocol       = "tcp"
   port_range        = "443/443"
   security_group_id = alicloud_security_group.uat_web_sg.id
-  cidr_ip           = "10.10.1.0/24"
+  cidr_ip           = "10.10.0.0/16"
   description       = "HTTPS via Palo Alto"
 }
 
@@ -207,7 +207,7 @@ resource "alicloud_security_group_rule" "preprod_web_http" {
   ip_protocol       = "tcp"
   port_range        = "80/80"
   security_group_id = alicloud_security_group.preprod_web_sg.id
-  cidr_ip    = "10.10.1.0/24"
+  cidr_ip    = "10.10.0.0/16"
   description       = "HTTP via Palo Alto"
 }
 
@@ -216,7 +216,7 @@ resource "alicloud_security_group_rule" "preprod_web_https" {
   ip_protocol       = "tcp"
   port_range        = "443/443"
   security_group_id = alicloud_security_group.preprod_web_sg.id
-  cidr_ip    = "10.10.1.0/24"
+  cidr_ip    = "10.10.0.0/16"
   description       = "HTTPS via Palo Alto"
 }
 
@@ -292,7 +292,7 @@ resource "alicloud_security_group_rule" "prod_web_https" {
   ip_protocol       = "tcp"
   port_range        = "443/443"
   security_group_id = alicloud_security_group.prod_web_sg.id
-  cidr_ip    = "10.10.1.0/24"
+  cidr_ip    = "10.10.0.0/16"
   description       = "HTTPS only via Palo Alto (no HTTP for prod)"
 }
 

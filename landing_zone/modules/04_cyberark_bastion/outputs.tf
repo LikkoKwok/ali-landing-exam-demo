@@ -6,9 +6,9 @@ output "vpc_cidr" {
   value = alicloud_vpc.shared_service.cidr_block
 }
 
-output "unified_ingress_slb_id" {
-  value = alicloud_slb_load_balancer.unified_ingress.id
-}
+# output "unified_ingress_slb_id" {
+#   value = alicloud_slb_load_balancer.unified_ingress.id
+# }
 
 output "ai_gateway_security_group_id" {
   value = alicloud_security_group.ai_gateway_sg.id

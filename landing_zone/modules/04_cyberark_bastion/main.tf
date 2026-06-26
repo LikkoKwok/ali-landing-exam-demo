@@ -63,13 +63,13 @@ resource "alicloud_vswitch" "ops_bastion" {
 # ============================================
 # UNIFIED INGRESS SLB
 # ============================================
-resource "alicloud_slb_load_balancer" "unified_ingress" {
-  load_balancer_name   = "${var.environment}-unified-ingress"
-  vswitch_id           = alicloud_vswitch.unified_ingress.id
-  load_balancer_spec   = "slb.s2.small"
-  address_type         = "intranet"
-  tags                 = var.tags
-}
+# resource "alicloud_slb_load_balancer" "unified_ingress" {
+#   load_balancer_name   = "${var.environment}-unified-ingress"
+#   vswitch_id           = alicloud_vswitch.unified_ingress.id
+#   load_balancer_spec   = "slb.s2.small"
+#   address_type         = "intranet"
+#   tags                 = var.tags
+# }
 
 # ============================================
 # BASTION HOST (Jump server)
