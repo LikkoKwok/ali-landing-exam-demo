@@ -27,12 +27,13 @@ Partner Certification Exam by addressing the specific requirements.
 - Service roles with temporary credentials (no long-lived access keys)
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Azure AD SSO	SAML federation with Azure AD via alicloud_ram_saml_provider
-RBAC Roles	Comprehensive role definitions including cloud-admin, network-admin, dba, ai-platform-admin, ml-engineer, data-scientist, model-reviewer, ai-user, ai-auditor
-Federated Roles	Each role maps to a RAM role with sts:AssumeRole policy for Azure AD users
-Least Privilege	Each role has scoped system policies (e.g., AliyunPAIReadOnlyAccess for model reviewers, AliyunVPCFullAccess for network admins)
-API Key Governance	Per-application service role ai-claims-app-invoke with temporary credentials; API keys stored in self-managed KMS
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Azure AD SSO | SAML federation with Azure AD via "alicloud_ram_saml_provider" |
+| RBAC Roles | Roles categorized into Infra Roles (e.g. Cloud Admin, DB Admin) and AI Roles (e.g. PAI Admin, ML Engineer, AI Auditor) |
+| Federated Roles | Each role maps to a RAM role with sts:AssumeRole policy for Azure AD users |
+| Least Privilege | Each role has scoped system policies (e.g., AliyunPAIReadOnlyAccess for model reviewers)
+| API Key Governance | Per-application service role ai-claims-app-invoke with temporary credentials; API keys stored in self-managed KMS |
 
 ## 3. Financial Management
 ## Requirements
@@ -42,12 +43,13 @@ API Key Governance	Per-application service role ai-claims-app-invoke with tempor
 - Proactive budget alerts and hard spending caps
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Cost Attribution	Resource Groups per business line (claims, actuarial, customer-service, shared)
-Tagging Strategy	Comprehensive tagging including Environment, ManagedBy, Project, Team, Service, Tier
-GPU Cost Tracking	Separate PAI Workspaces with independent Resource Groups for Claims and Actuarial teams
-AI-Specific Costs	OSS buckets tagged with DataClass (raw-pii, masked) for storage cost attribution
-Budget Enforcement	alicloud_bss_business_budget with 80% and 100% alert thresholds; auto-pause logic referenced in MLOps pipeline
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Cost Attribution | Resource Groups per business line (claims, actuarial, customer-service, shared)
+| Tagging Strategy | Comprehensive tagging including Environment, Project, Team, Service, Tier, etc. |
+| GPU Cost Tracking | Separate PAI Workspaces with independent Resource Groups for Claims and Actuarial teams |
+| AI-Specific Costs | OSS buckets tagged with DataClass (raw-pii, masked) for storage cost attribution |
+| Budget Enforcement | alicloud_bss_business_budget with 80% and 100% alert thresholds; auto-pause logic referenced in MLOps pipeline |
 
 ## 4. Network Architecture
 ## Requirements
@@ -58,15 +60,15 @@ Budget Enforcement	alicloud_bss_business_budget with 80% and 100% alert threshol
 - TLS 1.2+ encryption for all cross-site data transfers
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Hub and Spoke Design	Hub Security VPC (10.20.0.0/16) with Palo Alto firewall connecting to all spoke VPCs via CEN Transit Router
-Unified Ingress	Internal SLB in Shared Service VPC (10.10.1.0/24) as single entry point for all traffic
-Environment Isolation	Separate subnets per environment with Security Group rules preventing cross-environment access
-RDMA-Ready Training	AI Lab VPC with dedicated training subnet (10.2.2.0/24) supporting eRDMA
-Inference Protection	Inference subnet (10.2.3.0/24) with Security Groups allowing only AI Gateway (10.10.1.0/24) access
-Secure Cross-Site Connectivity	CEN Transit Router with encrypted transit between Hong Kong and Singapore
-Management Plane Isolation	Ops Bastion (10.10.30.0/24) as single management entry point, integrated with CyberArk
-Force Traffic through Firewall	Route tables with 0.0.0.0/0 pointing to Palo Alto ENI for outbound traffic; gateway route tables for inbound traffic inspection
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Hub and Spoke Design | Hub Security VPC (10.20.0.0/16) with Palo Alto firewall connecting to all spoke VPCs via CEN Transit Router |
+| IPv4 Gateway with NAT Gateway | AliCloud official solution for enforcing traffic through 3rd party firewall (in our case, Palo Alto) |
+| Environment Isolation	| Separate VPCs per environment with Security Group rules preventing cross-environment access |
+| RDMA-Ready Training | AI Lab VPC with dedicated training subnet (10.2.2.0/24) supporting eRDMA |
+| Inference Protection | Inference subnet (10.2.3.0/24) with Security Groups allowing only AI Gateway (10.10.1.0/24) access |
+| Secure Cross-Site Connectivity | CEN Transit Router with encrypted transit between Hong Kong and Singapore |
+| Management Plane Isolation | Ops Bastion (10.10.30.0/24) as single management entry point, integrated with CyberArk |
 
 ## 5. Security Architecture
 ## Requirements
@@ -79,16 +81,17 @@ Force Traffic through Firewall	Route tables with 0.0.0.0/0 pointing to Palo Alto
 - Pod security policies and network policies for GPU Kubernetes clusters
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Palo Alto Firewall	Mock Palo Alto instances (for demo) with untrusted/trusted interfaces; production ready for actual Palo Alto VM-Series deployment
-CyberArk Integration	Dedicated CyberArk PVWA and Vault instances with separate subnets and Security Group rules (port 1858 for Vault communication)
-KMS Encryption	Central KMS key for encrypting all OSS buckets, RDS instances, and disk volumes
-Encryption Monitoring	Cloud Config rules (ecs-disk-encrypted, oss-bucket-server-side-encryption-enabled, rds-tde-enabled)
-PII Data Pipeline	DataWorks project pii_masking_demo orchestrating PII scanning and redaction from raw_zone to curated_zone
-LLM Guardrails	OSS bucket for guardrail policies, RAM role for guardrail service, and defense-in-depth approach (retrieval-time inspection, input validation, output screening)
-Container Scanning	ACR configuration with vulnerability scanning (Trivy) for all AI training and inference images
-Network Policies	ACK cluster with Terway network policies enabled; explicit deny rules between training and inference pods
-Explicit Deny Rules	All resources have Deny rules for direct internet access (priority 100), enforcing traffic through Palo Alto
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Palo Alto Firewall | Mock Palo Alto instances (for demo) with untrusted/trusted interfaces |
+| CyberArk Integration | Dedicated CyberArk PVWA and Vault instances with separate subnets and Security Group rules (port 1858 for Vault communication)| 
+| KMS Encryption | Central KMS key for encrypting all OSS buckets, RDS instances, and disk volumes |
+| Encryption Monitoring | Cloud Config rules (ecs-disk-encrypted, oss-bucket-server-side-encryption-enabled, rds-tde-enabled) |
+| PII Data Pipeline | DataWorks project pii_masking_demo orchestrating PII scanning and redaction from raw_zone to curated_zone |
+| LLM Guardrails | OSS bucket for guardrail policies, RAM role for guardrail service, and defense-in-depth approach (retrieval-time inspection, input validation, output screening) |
+| Container Scanning | ACR configuration with vulnerability scanning (Trivy) for all AI training and inference images |
+| Network Policies | ACK cluster with Terway network policies enabled; explicit deny rules between training and inference pods |
+| Explicit Deny Rules | All resources have Deny rules for direct internet access (priority 100), enforcing traffic through Palo Alto |
 
 ## 6. Compliance and Audit
 ## Requirements
@@ -99,15 +102,16 @@ Explicit Deny Rules	All resources have Deny rules for direct internet access (pr
 - Model registry with versioning and approval gates
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Centralized Logging	SLS Project central-audit-demo with 3-year retention (1095 days) for all cloud operations and AI platform logs
-ActionTrail Integration	Multi-account ActionTrail delivering ALL API calls to SLS, including AI platform operations
-Compliance Rules	Config rules for unencrypted disk, OSS encryption, RDS encryption, SLB HTTPS
-AI Compliance	Specific Config rule ai-inference-no-public-ip ensuring inference endpoints are not exposed
-Preventive Controls	Control Policies (deny-logstore-deletion, deny-actiontrail-stop) applied at root folder level
-Model Registry	OSS bucket with versioning and KMS encryption for model artifacts; model-reviewer approval gate for production promotion
-AI Audit Trail	Dedicated SLS logstore ai-operations capturing every model training run, inference API call, and model version deployment
-Compliance Dashboard	Cloud Config aggregator providing unified view of compliance posture across all accounts and AI workloads
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Centralized Logging | SLS Project central-audit-demo with 3-year retention (1095 days) for all cloud operations and AI platform logs |
+| ActionTrail Integration | Multi-account ActionTrail delivering ALL API calls to SLS, including AI platform operations |
+| Compliance Rules | Config rules for unencrypted disk, OSS encryption, RDS encryption, SLB HTTPS |
+| AI Compliance | Specific Config rule ai-inference-no-public-ip ensuring inference endpoints are not exposed |
+| Preventive Controls | Control Policies (deny-logstore-deletion, deny-actiontrail-stop) applied at root folder level |
+| Model Registry | OSS bucket with versioning and KMS encryption for model artifacts; model-reviewer approval gate for production promotion |
+| AI Audit Trail | Dedicated SLS logstore ai-operations capturing every model training run, inference API call, and model version deployment |
+| Compliance Dashboard | Cloud Config aggregator providing unified view of compliance posture across all accounts and AI workloads |
 
 ## 7. Operations and Observability
 ## Requirements
@@ -118,12 +122,13 @@ Compliance Dashboard	Cloud Config aggregator providing unified view of complianc
 - Cost-to-value dashboard correlating business metrics against AI infrastructure cost
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-Centralized Logging	SLS project central-audit-demo with dedicated logstores for cloud operations and AI operations
-AI Full-Stack Observability	Logstore ai-fullstack-trace with indexed fields for inference latency, tokens, GPU utilization, error rates, and queue depth
-AIOps Integration	CloudMonitor alerts for GPU health and model drift; SLS Copilot for natural-language root cause analysis
-Cost-to-Value Dashboard	SLS dashboard ai-cost-to-value correlating business metrics (claims per hour, inquiries resolved) against AI infrastructure cost
-Proactive Alerting	CMS alarm contact group aiops-oncall for proactive alerting on model drift and data quality issues
+| Requirement | Implementation |
+| :-------- | :-------- |
+| Centralized Logging | SLS project central-audit-demo with dedicated logstores for cloud operations and AI operations |
+| AI Full-Stack Observability | Logstore ai-fullstack-trace with indexed fields for inference latency, tokens, GPU utilization, error rates | 
+| AIOps Integration | CloudMonitor alerts for GPU health and model drift; SLS Copilot for natural-language root cause analysis |
+| Cost-to-Value Dashboard | SLS dashboard ai-cost-to-value correlating business metrics (claims per hour, inquiries resolved) against AI infrastructure cost |
+| Proactive Alerting | CMS alarm contact group aiops-oncall for proactive alerting on model drift and data quality issues |
 
 ## 8. Automation
 ## Requirements
@@ -133,13 +138,14 @@ Proactive Alerting	CMS alarm contact group aiops-oncall for proactive alerting o
 - All stages reproducible and version-controlled
 
 ## How My Architecture Addresses This
-Requirement	Implementation
-100% Terraform	All infrastructure provisioned via Terraform - no manual console operations
-Modular Design	12+ modules including master_account, identity_sso, hub_security, cyberark_bastion, core_insurance_app, pai_platform, ai_data_security, ai_guardrails, financial_governance, logging_account, model_governance, observability
-Multi-Account Support	Provider configuration with assume_role for 7 separate accounts (hub, shared, log, app, ai_training, ai_inference, master)
-AI Infrastructure	PAI Workspaces, Datasets, Experiments, and Models all provisioned via Terraform
-CI/CD Ready	Variables, outputs, and backend configuration (OSS remote state) for automated deployments
-Version Control	Complete Git repository with semantic versioning and documented release process
+| Requirement | Implementation |
+| :-------- | :-------- |
+| 100% Terraform | All infrastructure provisioned via Terraform |
+| Modular Design | 12 modules (e.g. hub_security, cyberark_bastion, core_insurance_app, pai_platform, etc.) for high reusability |
+| Multi-Account Support | Provider configuration with assume_role for 7 separate accounts (hub, shared, log, app, ai_training, ai_inference, master) |
+| AI Infrastructure | PAI Workspaces, Datasets, Experiments, and Models all provisioned via Terraform |
+| CI/CD Ready | Variables, outputs, and backend configuration (OSS remote state) for automated deployment |
+| Version Control | Complete Git repository with semantic versioning and documented release process |
 
 ## Architecture Diagram Summary
 ![architecture](architecture.jpg)
